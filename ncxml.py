@@ -40,11 +40,31 @@ class NcXml(BuilderGen):
             # Silent the error and just return value passed
             return x
 
-    def __q_conceptos(self, conn, fac_id):
+    def __q_conceptos(self, conn, nc_id):
         """
         Consulta los conceptos de la nc en dbms
         """
-        pass
+        q = """SELECT '84111506'::character varying AS clave_prod,
+            'ACT'::character varying AS clave_unidad,
+            'ACT'::character varying AS unidad,
+            '1'::character varying AS cantidad,
+            '0'::character varying AS no_identificacion,
+            'Servicios de facturacion'::character varying AS descripcion,
+            subtotal::character varying as valor_unitario,
+            subtotal::character varying as importe
+            FROM fac_nota_credito
+            WHERE id = """
+        for row in self.pg_query(conn, "{0}{1}".format(q, nc_id)):
+            # Just taking first row of query result
+            return {
+                'PRODSERV': row['clave_prod'],
+                'UNIDAD': row['clave_unidad'],
+                'CANTIDAD': row['cantidad'],
+                'SKU': row['no_identificacion'],
+                'DESCRIPCION': row['descripcion'],
+                'PRECIO_UNITARIO': row['valor_unitario'],
+                'IMPORTE': row['importe']
+            }
 
     def __q_no_certificado(self, conn, usr_id):
         """
