@@ -30,6 +30,19 @@ class NcrXml(BuilderGen):
     def __narf(self, v):
         return  Decimal(truncate(float(v), self.__NDECIMALS, True))
 
+    def __calc_imp_tax(self, imp, tasa):
+        return self.__narf(Decimal(imp) * Decimal(tasa))
+
+    def __calc_base(self, imp, tasa):
+        return self.__narf(
+            Decimal(imp) + Decimal( self.__calc_imp_tax(imp, tasa) )
+        )
+
+    def __abs_importe(self, a):
+        return self.__narf(
+            Decimal(str(a['IMPORTE'])) - Decimal(str(a['DESCTO']))
+        )
+
     def __place_tasa(self, x):
         """
         smart method to deal with a tasa less
@@ -52,7 +65,10 @@ class NcrXml(BuilderGen):
             '0'::character varying AS no_identificacion,
             'Servicios de facturacion'::character varying AS descripcion,
             subtotal::character varying as valor_unitario,
-            subtotal::character varying as importe
+            subtotal::character varying as importe,
+            '0'::character varying AS descto,
+            '0'::character varying AS tasa_ieps,
+            valor_impuesto AS  tasa_impuesto
             FROM fac_nota_credito
             WHERE id = """
         for row in self.pg_query(conn, "{0}{1}".format(q, nc_id)):
@@ -64,7 +80,11 @@ class NcrXml(BuilderGen):
                 'SKU': row['no_identificacion'],
                 'DESCRIPCION': row['descripcion'],
                 'PRECIO_UNITARIO': row['valor_unitario'],
-                'IMPORTE': row['importe']
+                'IMPORTE': row['importe'],
+                'DESCTO': truncate(row['descto'], self.__NDECIMALS),
+                # From this point onwards tax related elements
+                'TASA_IEPS': row['tasa_ieps'],
+                'TASA_IMPUESTO': row['tasa_impuesto'],
             }
 
     def __q_no_certificado(self, conn, usr_id):
@@ -190,6 +210,36 @@ class NcrXml(BuilderGen):
             # Just taking first row of query result
             return row['cert_file']
 
+
+    def __calc_totales(self, l_items):
+        totales = {
+            'MONTO_TOTAL': Decimal(0),
+            'IMPORTE_SUM': Decimal(0),
+            'IMPORTE_SUM_IMPUESTO': Decimal(0),
+            'IMPORTE_SUM_IEPS': Decimal(0),
+            'DESCTO_SUM': Decimal(0),
+        }
+
+        for item in l_items:
+            totales['IMPORTE_SUM'] += self.__narf(item['IMPORTE'])
+            totales['DESCTO_SUM'] += self.__narf(item['DESCTO'])
+            totales['IMPORTE_SUM_IEPS'] += self.__narf(
+                self.__calc_imp_tax(
+                    self.__abs_importe(item),
+                    self.__place_tasa(item['TASA_IEPS'])
+                )
+            )
+            totales['IMPORTE_SUM_IMPUESTO'] += self.__narf(
+                 self.__calc_imp_tax(
+                    self.__calc_base(self.__abs_importe(item), self.__place_tasa(item['TASA_IEPS'])),
+                    self.__place_tasa(item['TASA_IMPUESTO'])
+                 )
+            )
+
+        totales['MONTO_TOTAL'] = self.__narf(totales['IMPORTE_SUM']) - self.__narf(totales['DESCTO_SUM']) + self.__narf(totales['IMPORTE_SUM_IEPS']) + self.__narf(totales['IMPORTE_SUM_IMPUESTO'])
+        return {k: self.__narf(v) for k, v in totales.items()}
+
+
     def data_acq(self, conn, d_rdirs, **kwargs):
 
         usr_id = kwargs.et('usr_id', None)
@@ -272,6 +322,8 @@ class NcrXml(BuilderGen):
         c.NoCertificado = dat['NUMERO_CERTIFICADO']
         c.Certificado = dat['CERT_B64']
         c.TipoDeComprobante = 'E'
+        c.SubTotal = dat['TOTALES']['IMPORTE_SUM']
+        c.Total = dat['TOTALES']['MONTO_TOTAL']
         if dat['MONEDA']['ISO_4217'] == 'MXN':
             c.TipoCambio = 1
         else:
@@ -297,7 +349,8 @@ class NcrXml(BuilderGen):
                 Descripcion=i['DESCRIPCION'],
                 ValorUnitario=i['PRECIO_UNITARIO'],
                 NoIdentificacion=i['SKU'],  # optional
-                Importe=truncate(i['IMPORTE'], self.__NDECIMALS)
+                Importe=truncate(i['IMPORTE'], self.__NDECIMALS),
+                Impuestos=self.__tag_impuestos(i) if i['TASA_IMPUESTO'] > 0 else None
             ))
 
         tmp_file = save(c)
