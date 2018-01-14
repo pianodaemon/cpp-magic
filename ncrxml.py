@@ -15,14 +15,14 @@ from sat.requirement import writedom_cfdi, sign_cfdi
 from sat.artifacts import CfdiType
 
 
-impt_class='NcXml'
+impt_class='NcrXml'
 
 
-class NcXml(BuilderGen):
+class NcrXml(BuilderGen):
 
     __NDECIMALS = 2
-    __MAKEUP_PROPOS = CfdiType.NC
-    __XSLT_NC = 'cadenaoriginal_3_3.xslt'
+    __MAKEUP_PROPOS = CfdiType.NCR
+    __XSLT_NCR = 'cadenaoriginal_3_3.xslt'
 
     def __init__(self, logger):
         super().__init__(logger)
@@ -222,7 +222,7 @@ class NcXml(BuilderGen):
             'CONTROL': self.__q_serie_folio(conn, usr_id),
             'CERT_B64': certb64,
             'KEY_PRIVATE': os.path.join(sslrfc_dir, sp['PKNAME']),
-            'XSLT_SCRIPT': os.path.join(d_rdirs['cfdi_xslt'], self.__XSLT_NC),
+            'XSLT_SCRIPT': os.path.join(d_rdirs['cfdi_xslt'], self.__XSLT_NCR),
             'EMISOR': ed,
             'RECEPTOR': self.__q_receptor(conn, nc_id),
             'MONEDA': self.__q_moneda(conn, nc_id),
