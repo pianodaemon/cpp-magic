@@ -61,16 +61,20 @@ class NcrXml(BuilderGen):
         q = """SELECT '84111506'::character varying AS clave_prod,
             'ACT'::character varying AS clave_unidad,
             'ACT'::character varying AS unidad,
-            '1'::character varying AS cantidad,
+            '1'::double precision AS cantidad,
             '0'::character varying AS no_identificacion,
             'Servicios de facturacion'::character varying AS descripcion,
-            subtotal::character varying as valor_unitario,
-            subtotal::character varying as importe,
-            '0'::character varying AS descto,
-            '0'::character varying AS tasa_ieps,
-            valor_impuesto AS  tasa_impuesto
-            FROM fac_nota_credito
-            WHERE id = """
+            NC.subtotal as valor_unitario,
+            NC.subtotal as importe,
+            '0'::double precision AS descto,
+            '0'::double precision AS tasa_ieps,
+            '0'::integer as ieps_id,
+            NC.valor_impuesto AS tasa_impuesto,
+            GI.id AS impto_id
+            FROM fac_nota_credito AS NC
+            JOIN gral_suc AS SUC on NC.gral_suc_id = SUC.id
+            JOIN gral_imptos AS GI ON GI.id = SUC.gral_impto_id
+            WHERE NC.id = """
         for row in self.pg_query(conn, "{0}{1}".format(q, nc_id)):
             # Just taking first row of query result
             return {
@@ -79,12 +83,14 @@ class NcrXml(BuilderGen):
                 'CANTIDAD': row['cantidad'],
                 'SKU': row['no_identificacion'],
                 'DESCRIPCION': row['descripcion'],
-                'PRECIO_UNITARIO': row['valor_unitario'],
-                'IMPORTE': row['importe'],
-                'DESCTO': truncate(row['descto'], self.__NDECIMALS),
+                'PRECIO_UNITARIO': self.__narf(row['valor_unitario']),
+                'IMPORTE': self.__narf(row['importe']),
+                'DESCTO': self.__narf(row['descto']),
                 # From this point onwards tax related elements
                 'TASA_IEPS': row['tasa_ieps'],
                 'TASA_IMPUESTO': row['tasa_impuesto'],
+                'IEPS_ID': row['ieps_id'],
+                'IMPUESTO_ID': row['impto_id']
             }
 
     def __q_no_certificado(self, conn, usr_id):
@@ -201,7 +207,7 @@ class NcrXml(BuilderGen):
         """
         Consulta el certificado que usa el usuario en dbms
         """
-        SQL = """select fac_cfds_conf.archivo_certificado as cert_file
+        q = """select fac_cfds_conf.archivo_certificado as cert_file
             FROM gral_suc AS SUC
             LEFT JOIN gral_usr_suc ON gral_usr_suc.gral_suc_id = SUC.id
             LEFT JOIN fac_cfds_conf ON fac_cfds_conf.gral_suc_id = SUC.id
@@ -211,7 +217,104 @@ class NcrXml(BuilderGen):
             return row['cert_file']
 
 
+    def __q_ieps(self, conn, usr_id):
+        """
+        Total de IEPS activos en sucursal
+        """
+        q = """SELECT gral_ieps.id as id, cci.clave as clave,
+            gral_ieps.titulo as desc, gral_ieps.tasa as tasa
+            FROM gral_suc AS SUC
+            LEFT JOIN gral_usr_suc AS USR_SUC ON USR_SUC.gral_suc_id = SUC.id
+            LEFT JOIN gral_emp AS EMP ON EMP.id = SUC.empresa_id
+            LEFT JOIN gral_ieps ON gral_ieps.gral_emp_id = EMP.id
+            LEFT JOIN cfdi_c_impuesto AS cci ON cci.id = gral_ieps.cfdi_c_impuesto
+            WHERE gral_ieps.borrado_logico=false AND
+            USR_SUC.gral_usr_id = """
+        rowset = []
+        for row in self.pg_query(conn, "{0}{1}".format(q, usr_id)):
+            rowset.append({
+                'ID' : row['id'],
+                'CLAVE': row['clave'],
+                'DESC': row['desc'],
+                'TASA': row['tasa']
+            })
+        return rowset
+
+
+    def __q_ivas(self, conn, usr_id):
+        """
+        Total de IVA activos en sucursal
+        """
+        q = """SELECT gral_imptos.id as id,
+            gral_imptos.descripcion AS titulo,
+            gral_imptos.iva_1 as tasa
+            FROM gral_suc AS SUC
+            JOIN gral_imptos ON gral_imptos.id = SUC.gral_impto_id
+            LEFT JOIN gral_usr_suc AS USR_SUC ON USR_SUC.gral_suc_id = SUC.id
+            WHERE gral_imptos.borrado_logico = false AND
+            USR_SUC.gral_usr_id = """
+        rowset = []
+        for row in self.pg_query(conn, "{0}{1}".format(q, usr_id)):
+            rowset.append({
+                'ID' : row['id'],
+                'DESC': row['titulo'],
+                'TASA': row['tasa']
+            })
+        return rowset
+
+    def __calc_traslados(self, l_items, l_ieps, l_iva):
+        """
+        Calcula los impuestos trasladados
+        """
+        traslados = []
+
+        for tax in l_iva:
+            # next two variables shall get lastest value of loop
+            # It's not me. It is the Noe approach :|
+            impto_id = 0
+            tasa = 0
+            importe_sum = Decimal(0)
+            for item in l_items:
+                if tax['ID'] == item['IMPUESTO_ID']:
+                    impto_id = item['IMPUESTO_ID']
+                    tasa = item['TASA_IMPUESTO']
+                    importe_sum += self.__narf(self.__calc_imp_tax(
+                        self.__calc_base(self.__abs_importe(item), self.__place_tasa(item['TASA_IEPS'])),
+                        self.__place_tasa(item['TASA_IMPUESTO'])
+                    ))
+            if impto_id > 0:
+                traslados.append({
+                    'impuesto': 'IVA',
+                    'clave': '002',
+                    'importe': truncate(float(importe_sum), self.__NDECIMALS),
+                    'tasa': tasa
+                })
+
+        for tax in l_ieps:
+            # next two variables shall get lastest value of loop
+            # It's not me. It is the Noe approach :|
+            impto_id = 0
+            tasa = 0
+            importe_sum = Decimal(0)
+            for item in l_items:
+                if tax['ID'] == item['IEPS_ID']:
+                    impto_id = item['IEPS_ID']
+                    tasa = item['TASA_IEPS']
+                    importe_sum += self.__narf(self.__calc_imp_tax(
+                        self.__abs_importe(item), self.__place_tasa(item['TASA_IEPS'])
+                    ))
+            if impto_id > 0:
+                traslados.append({
+                    'impuesto': 'IEPS',
+                    'clave': '003',
+                    'importe': truncate(float(importe_sum), self.__NDECIMALS),
+                    'tasa': tasa
+                })
+        return traslados
+
+
     def __calc_totales(self, l_items):
+
         totales = {
             'MONTO_TOTAL': Decimal(0),
             'IMPORTE_SUM': Decimal(0),
@@ -349,13 +452,69 @@ class NcrXml(BuilderGen):
                 Descripcion=i['DESCRIPCION'],
                 ValorUnitario=i['PRECIO_UNITARIO'],
                 NoIdentificacion=i['SKU'],  # optional
-                Importe=truncate(i['IMPORTE'], self.__NDECIMALS),
+                Importe=i['IMPORTE'],
                 Impuestos=self.__tag_impuestos(i) if i['TASA_IMPUESTO'] > 0 else None
             ))
+
+        def traslado(c, tc, imp):
+            return pyxb.BIND(TipoFactor='Tasa',
+                Impuesto=c, TasaOCuota=tc, Importe=imp)
+
+        def zigma(v):
+            z = Decimal(0)
+            for w in v:
+                z += self.__narf(w['importe'])
+            return z
+
+        c.Impuestos = pyxb.BIND(
+            TotalImpuestosRetenidos=0,
+            TotalImpuestosTrasladados=zigma(dat['TRASLADOS']),
+            Traslados=pyxb.BIND(
+                *tuple([traslado(t['clave'], self.__place_tasa(t['tasa']), t['importe']) for t in dat['TRASLADOS']])
+            )
+        )
 
         tmp_file = save(c)
         wa(tmp_file)
         wrap_up(tmp_file, output_file)
 
+
     def data_rel(self, dat):
         pass
+
+
+    def __tag_traslados(self, i):
+
+        def traslado(b, c, tc, imp):
+            return pyxb.BIND(
+                Base=b, TipoFactor='Tasa',
+                Impuesto=c, TasaOCuota=tc, Importe=imp)
+
+        taxes = []
+        if i['TASA_IMPUESTO'] > 0:
+            base = self.__calc_base(self.__abs_importe(i), self.__place_tasa(i['TASA_IEPS']))
+            taxes.append(
+                traslado(
+                    base, "002", self.__place_tasa(i['TASA_IMPUESTO']), self.__calc_imp_tax(
+                        base, self.__place_tasa(i['TASA_IMPUESTO'])
+                    )
+                )
+            )
+        if i['TASA_IEPS'] > 0:
+            taxes.append(
+                traslado(
+                    i['IMPORTE'], "003", self.__place_tasa(i['TASA_IEPS']), self.__calc_imp_tax(
+                        i['IMPORTE'], self.__place_tasa(i['TASA_IEPS'])
+                    )
+                )
+            )
+        return pyxb.BIND(*tuple(taxes))
+
+
+    def __tag_impuestos(self, i):
+        notaxes = True
+        kwargs = {}
+        if i['TASA_IMPUESTO'] > 0 or i['TASA_IEPS'] > 0:
+            notaxes = False
+            kwargs['Traslados'] = self.__tag_traslados(i)
+        return pyxb.BIND() if notaxes else pyxb.BIND(**kwargs)
