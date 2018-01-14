@@ -214,6 +214,8 @@ class NcXml(BuilderGen):
         if nc_id is None:
             raise DocBuilderStepError("nc id not fed")
 
+        conceptos = self.__q_conceptos(conn, nc_id)
+
         return {
             'TIME_STAMP': '{0:%Y-%m-%dT%H:%M:%S}'.format(datetime.datetime.now()),
             'CONTROL': self.__q_serie_folio(conn, usr_id),
@@ -223,7 +225,8 @@ class NcXml(BuilderGen):
             'RECEPTOR': self.__q_receptor(conn, nc_id),
             'MONEDA': self.__q_moneda(conn, nc_id),
             'NUMERO_CERTIFICADO': self.__q_no_certificado(conn, usr_id),
-            'LUGAR_EXPEDICION': self.__q_lugar_expedicion(conn, usr_id)
+            'LUGAR_EXPEDICION': self.__q_lugar_expedicion(conn, usr_id),
+            'CONCEPTOS': conceptos,
         }
 
     def format_wrt(self, output_file, dat):
@@ -283,6 +286,17 @@ class NcXml(BuilderGen):
         c.Receptor.Nombre = dat['RECEPTOR']['RAZON_SOCIAL']  # optional
         c.Receptor.Rfc = dat['RECEPTOR']['RFC']
 
+        c.Conceptos = pyxb.BIND()
+        for i in dat['CONCEPTOS']:
+            c.Conceptos.append(pyxb.BIND(
+                Cantidad=i['CANTIDAD'],
+                ClaveUnidad=i['UNIDAD'],
+                ClaveProdServ=i['PRODSERV'],
+                Descripcion=i['DESCRIPCION'],
+                ValorUnitario=i['PRECIO_UNITARIO'],
+                NoIdentificacion=i['SKU'],  # optional
+                Importe=truncate(i['IMPORTE'], self.__NDECIMALS)
+            ))
 
         tmp_file = save(c)
         wa(tmp_file)
