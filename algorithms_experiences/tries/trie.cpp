@@ -1,5 +1,7 @@
 #include "tries.hpp"
 
+#define __CHAR_FOUND_ON_CHILDREN(P,W)       P->children.find( W ) \
+        != P->children.end()
 #define __CHAR_NOT_FOUND_ON_CHILDREN(P,W)   P->children.find( W ) \
         == P->children.end()
 
