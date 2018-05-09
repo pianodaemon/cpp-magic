@@ -3,11 +3,11 @@
 
 #include <unordered_map>
 
-#define TRIE_STUFF_SUCCEED           0
-#define TRIE_SYSTEM_ERROR           -1
-#define TRIE_PARAM_NULL_PTR         -6001
-#define TRIE_NOT_FOUND_ERROR        -6002
-#define TRIE_PARAM_NOT_VALID_VALUE  -6003
+#define TRIE_STUFF_SUCCEED                 0
+#define TRIE_SYSTEM_ERROR                 -1
+#define TRIE_PARAM_NULL_PTR_ERROR         -6001
+#define TRIE_NOT_FOUND_WORD_ERROR         -6002
+#define TRIE_NOT_VALID_WORD_ERROR         -6003
 
 struct Trie
 {

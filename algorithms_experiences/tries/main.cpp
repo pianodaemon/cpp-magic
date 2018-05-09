@@ -8,6 +8,7 @@ int main( int argc , char *argv[] )
 
     trie_insert( &t_ptr, "hola" );
 
+    trie_search( t_ptr, "hola" );
     return 0;
 
 }

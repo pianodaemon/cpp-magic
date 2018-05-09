@@ -44,13 +44,13 @@ trie_insert( TriePtr * head_ptr, const std::string word )
 
         if ( head_ptr == nullptr )
         {
-            rc = TRIE_PARAM_NULL_PTR;
+            rc = TRIE_PARAM_NULL_PTR_ERROR;
             break;
         }
 
         if ( word.empty() )
         {
-            rc = TRIE_PARAM_NOT_VALID_VALUE;
+            rc = TRIE_NOT_VALID_WORD_ERROR;
             break;
         }
 
@@ -78,11 +78,11 @@ trie_search( TriePtr head_ptr, const std::string word )
 
     if ( head_ptr == nullptr )
     {
-        rc = TRIE_PARAM_NULL_PTR;
+        rc = TRIE_PARAM_NULL_PTR_ERROR;
 
         if ( word.empty() )
         {
-            rc = TRIE_PARAM_NOT_VALID_VALUE;
+            rc = TRIE_NOT_VALID_WORD_ERROR;
         }
     }
     else
@@ -93,12 +93,12 @@ trie_search( TriePtr head_ptr, const std::string word )
         {
             if ( ( curr_ptr = curr_ptr->children[ c ] ) == nullptr )
             {
-                rc = TRIE_NOT_FOUND_ERROR;
+                rc = TRIE_NOT_FOUND_WORD_ERROR;
                 break;
             }
         }
 
-        if ( !curr_ptr->is_whole_word ) rc = TRIE_NOT_FOUND_ERROR;
+        if ( !curr_ptr->is_whole_word ) rc = TRIE_NOT_FOUND_WORD_ERROR;
     }
 
     return rc;
