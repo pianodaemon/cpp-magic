@@ -7,7 +7,7 @@ static TriePtr
 trie_incept()
 {
     auto n_ptr = new Trie;
-    if ( n_ptr ) n_ptr->is_leaf = false;
+    if ( n_ptr ) n_ptr->is_whole_word = false;
     return n_ptr;
 }
 
@@ -30,7 +30,7 @@ trie_populate( TriePtr curr_ptr, const char * s_ptr )
         curr_ptr = curr_ptr->children[ *s_ptr ];
     }
 
-    curr_ptr->is_leaf = true;
+    curr_ptr->is_whole_word = true;
 
     return rc;
 }
