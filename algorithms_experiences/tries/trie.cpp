@@ -48,6 +48,12 @@ trie_insert( TriePtr * head_ptr, const std::string word )
             break;
         }
 
+        if ( word.empty() )
+        {
+            rc = TRIE_PARAM_NOT_VALID_VALUE;
+            break;
+        }
+
         if ( *head_ptr == nullptr )
         {
             if ( ( *head_ptr = trie_incept() ) == nullptr )
