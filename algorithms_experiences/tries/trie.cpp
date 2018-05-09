@@ -104,6 +104,16 @@ trie_search( TriePtr head_ptr, const std::string word )
     return rc;
 }
 
+static int
+trie_empty( TriePtr const curr_ptr )
+{
+    for ( auto it : curr_ptr->children )
+    {
+        if ( it.second != nullptr ) return TRIE_NOT_EMPTY_ERROR;
+    }
+
+    return TRIE_STUFF_SUCCEED;
+}
 
 extern int
 trie_delete( TriePtr * start_ptr, const std::string word )

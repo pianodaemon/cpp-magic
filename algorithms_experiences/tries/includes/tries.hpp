@@ -8,6 +8,7 @@
 #define TRIE_PARAM_NULL_PTR_ERROR         -6001
 #define TRIE_NOT_FOUND_WORD_ERROR         -6002
 #define TRIE_NOT_VALID_WORD_ERROR         -6003
+#define TRIE_NOT_EMPTY_ERROR              -6004
 
 struct Trie
 {
