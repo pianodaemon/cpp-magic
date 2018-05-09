@@ -63,3 +63,37 @@ trie_insert( TriePtr * head_ptr, const std::string word )
 
     return rc;
 }
+
+
+extern int
+trie_search( TriePtr head_ptr, const std::string word )
+{
+    int rc = TRIE_STUFF_SUCCEED;
+
+    if ( head_ptr == nullptr )
+    {
+        rc = TRIE_PARAM_NULL_PTR;
+
+        if ( word.empty() )
+        {
+            rc = TRIE_PARAM_NOT_VALID_VALUE;
+        }
+    }
+    else
+    {
+        auto curr_ptr = head_ptr;
+
+        for( const char& c : word )
+        {
+            if ( ( curr_ptr = curr_ptr->children[ c ] ) == nullptr )
+            {
+                rc = TRIE_NOT_FOUND_ERROR;
+                break;
+            }
+        }
+
+        if ( !curr_ptr->is_whole_word ) rc = TRIE_NOT_FOUND_ERROR;
+    }
+
+    return rc;
+}

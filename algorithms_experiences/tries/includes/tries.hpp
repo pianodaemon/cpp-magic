@@ -6,6 +6,8 @@
 #define TRIE_STUFF_SUCCEED           0
 #define TRIE_SYSTEM_ERROR           -1
 #define TRIE_PARAM_NULL_PTR         -6001
+#define TRIE_NOT_FOUND_ERROR        -6002
+#define TRIE_PARAM_NOT_VALID_VALUE  -6003
 
 struct Trie
 {
@@ -19,5 +21,8 @@ typedef struct Trie * TriePtr;
 
 extern int
 trie_insert( TriePtr *, const std::string );
+
+extern int
+trie_search( TriePtr, const std::string );
 
 #endif /*  __TRIE_DATA_STRUCTURE_HPP__ */
