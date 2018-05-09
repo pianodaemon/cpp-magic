@@ -25,4 +25,7 @@ trie_insert( TriePtr *, const std::string );
 extern int
 trie_search( TriePtr, const std::string );
 
+extern int
+trie_delete( TriePtr *, const std::string );
+
 #endif /*  __TRIE_DATA_STRUCTURE_HPP__ */

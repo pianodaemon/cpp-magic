@@ -103,3 +103,34 @@ trie_search( TriePtr head_ptr, const std::string word )
 
     return rc;
 }
+
+
+extern int
+trie_delete( TriePtr * start_ptr, const std::string word )
+{
+    int rc = TRIE_STUFF_SUCCEED;
+
+    do {
+
+        if ( start_ptr == nullptr )
+        {
+            rc = TRIE_PARAM_NULL_PTR_ERROR;
+            break;
+        }
+
+        if ( word.empty() )
+        {
+            rc = TRIE_NOT_VALID_WORD_ERROR;
+            break;
+        }
+
+        if ( *start_ptr == nullptr )
+        {
+
+        }
+
+
+    } while (0);
+
+    return rc;
+}
