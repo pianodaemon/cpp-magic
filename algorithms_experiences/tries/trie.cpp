@@ -117,6 +117,44 @@ trie_empty( TriePtr const curr_ptr )
     return TRIE_STUFF_SUCCEED;
 }
 
+
+static bool
+erase( TriePtr& curr_ptr, const char * s_ptr )
+{
+    auto attempt_destroy = [&]()->bool
+    {
+        if ( trie_empty( curr_ptr ) == TRIE_STUFF_SUCCEED )
+        {
+            delete curr_ptr;
+            curr_ptr = nullptr;
+            return true;
+        }
+
+        return false;
+    };
+
+    const char& c = *s_ptr;
+
+    if ( c && ( __CHAR_FOUND_ON_CHILDREN( curr_ptr, c ) ) )
+    {
+        auto res = erase( curr_ptr->children[ c ], s_ptr + 1 );
+
+        if ( res && ( !curr_ptr->is_whole_word ) )
+            return attempt_destroy();
+    }
+
+    if ( curr_ptr->is_whole_word && ( c == 0 ) )
+    {
+        if ( attempt_destroy() )
+            return true;
+
+        curr_ptr->is_whole_word = false;
+    }
+
+    return false;
+}
+
+
 extern int
 trie_delete( TriePtr * start_ptr, const std::string word )
 {
@@ -138,9 +176,11 @@ trie_delete( TriePtr * start_ptr, const std::string word )
 
         if ( *start_ptr == nullptr )
         {
-
+            rc = TRIE_PARAM_NULL_PTR_ERROR;
+            break;
         }
 
+        erase( *start_ptr, word.c_str() );
 
     } while (0);
 
