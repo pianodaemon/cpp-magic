@@ -100,7 +100,11 @@ trie_search( TriePtr head_ptr, const std::string word )
             }
         }
 
-        if ( !curr_ptr->is_whole_word ) rc = TRIE_NOT_FOUND_WORD_ERROR;
+        if ( ( rc == TRIE_STUFF_SUCCEED ) &&
+             ( !curr_ptr->is_whole_word ) )
+        {
+            rc = TRIE_NOT_FOUND_WORD_ERROR;
+        }
     }
 
     return rc;
