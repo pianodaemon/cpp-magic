@@ -119,7 +119,7 @@ trie_empty( TriePtr const curr_ptr )
 
 
 static bool
-erase( TriePtr& curr_ptr, const char * s_ptr )
+trie_erase( TriePtr& curr_ptr, const char * s_ptr )
 {
     auto attempt_destroy = [&]()->bool
     {
@@ -137,7 +137,7 @@ erase( TriePtr& curr_ptr, const char * s_ptr )
 
     if ( c && ( __CHAR_FOUND_ON_CHILDREN( curr_ptr, c ) ) )
     {
-        auto res = erase( curr_ptr->children[ c ], s_ptr + 1 );
+        auto res = trie_erase( curr_ptr->children[ c ], s_ptr + 1 );
 
         if ( res && ( !curr_ptr->is_whole_word ) )
             return attempt_destroy();
@@ -180,7 +180,10 @@ trie_delete( TriePtr * start_ptr, const std::string word )
             break;
         }
 
-        erase( *start_ptr, word.c_str() );
+        if ( trie_erase( *start_ptr, word.c_str() ) )
+            break;
+        else
+            rc = TRIE_NOT_FOUND_WORD_ERROR;
 
     } while (0);
 
