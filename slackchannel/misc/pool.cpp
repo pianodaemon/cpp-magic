@@ -15,26 +15,26 @@ Misc::Pool<T>::~Pool()
 
 template< typename T >
 void
-Misc::Pool<T>::place_at( const int index, T* t )
+Misc::Pool<T>::place_at( const int idx, T* t )
 {
     pthread_mutex_lock( &this->m_mutex );
-    this->m_slots[index] = t;
+    this->m_slots[idx] = t;
     pthread_mutex_unlock( &this->m_mutex );
 }
 
 template< typename T >
 void
-Misc::Pool<T>::destroy_at( const int index )
+Misc::Pool<T>::destroy_at( const int idx )
 {
-    this->place_at( index, nullptr );
+    this->place_at( idx, nullptr );
 }
 
 template< typename T >
 T*
-Misc::Pool<T>::fetch_from( const int index )
+Misc::Pool<T>::fetch_from( const int idx )
 {
     pthread_mutex_lock( &this->m_mutex );
-    auto t = this->m_slots[index];
+    auto t = this->m_slots[idx];
     pthread_mutex_unlock( &this->m_mutex );
     return t;
 }
@@ -50,8 +50,8 @@ Misc::Pool<T>::place_smart( T* t )
     };
 
     pthread_mutex_lock( &this->m_mutex );
-    auto index = req_next();
-    this->m_slots[index] = t;
+    auto idx = req_next();
+    this->m_slots[idx] = t;
     pthread_mutex_unlock( &this->m_mutex );
-    return index;
+    return idx;
 }
