@@ -16,6 +16,7 @@ class Pool
         Pool( const int );
         virtual ~Pool();
         void place_at( const int index, T* t );
+        int place_smart( T* t );
         void destroy_at( const int index );
         T* fetch_from( const int index );
 

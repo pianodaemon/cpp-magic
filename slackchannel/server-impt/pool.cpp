@@ -38,3 +38,20 @@ Misc::Pool<T>::fetch_from( const int index )
     pthread_mutex_unlock( &this->m_mutex );
     return t;
 }
+
+template< typename T >
+int
+Misc::Pool<T>::place_smart( T* t )
+{
+    auto req_next = [&]()->int
+    {
+        /* still needed implementation*/
+        return 0;
+    };
+
+    pthread_mutex_lock( &this->m_mutex );
+    auto index = req_next();
+    this->m_slots[index] = t;
+    pthread_mutex_unlock( &this->m_mutex );
+    return index;
+}
