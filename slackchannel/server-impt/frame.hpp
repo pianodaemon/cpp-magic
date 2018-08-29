@@ -1,9 +1,9 @@
-#ifndef __SLACKPROTO_FRAME_HPP__
-#define __SLACKPROTO_FRAME_HPP__
+#ifndef __SLACKCHANNEL_FRAME_HPP__
+#define __SLACKCHANNEL_FRAME_HPP__
 
 #include <cstdlib>
 
-namespace SlackProto
+namespace SlackChannel
 {
 
 /* The Natural dimensions of a Frame */
@@ -20,22 +20,22 @@ class Frame
 
         Frame();
 
-        const char* getFramePtr() const;
-        char* getFramePtr();
-        size_t getFrameLength() const;
-        const char* getDataSegmentPtr() const;
-        char* getDataSegmentPtr();
-        size_t getDataSegmentLength() const;
-        void setDataSegmentLength( int new_length );
-        bool decodeHeader();
-        void encodeHeader();
+        const char* get_frame_ptr() const;
+        char* get_frame_ptr();
+        size_t get_frame_len() const;
+        const char* get_data_seg_ptr() const;
+        char* get_data_seg_ptr();
+        size_t get_data_seg_len() const;
+        void set_data_seg_len( int new_length );
+        bool dec_header();
+        void enc_header();
 
     private:
 
         char m_buffer[ FRAME_FULL_MAX_LENGTH ];
-        int  m_dataSegmentLength;
+        int  m_data_seg_len;
 };
 
 }
 
-#endif /*  __SLACKPROTO_FRAME_HPP__ */
+#endif /*  __SLACKCHANNEL_FRAME_HPP__ */
