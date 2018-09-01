@@ -5,7 +5,7 @@
 #include <boost/bind.hpp>
 #include <boost/shared_ptr.hpp>
 #include <boost/enable_shared_from_this.hpp>
-
+#include "frame.hpp"
 
 namespace SlackChannel
 {
@@ -23,6 +23,7 @@ namespace SlackChannel
             void fetch_head( const boost::system::error_code& error );
             void fetch_body( const boost::system::error_code& error );
 
+            Frame m_pivot;
             boost::asio::ip::tcp::socket& m_socket;
     };
 

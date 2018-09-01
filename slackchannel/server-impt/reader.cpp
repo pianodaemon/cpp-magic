@@ -20,7 +20,7 @@ void
 SlackChannel::Reader::gear()
 {
     boost::asio::async_read( this->m_socket,
-        boost::asio::buffer( m_read_chunk.get_frame_ptr(),
+        boost::asio::buffer( m_pivot.get_frame_ptr(),
                              SlackChannel::FRAME_HEADER_LENGTH ),
         boost::bind( &SlackChannel::Reader::fetch_head,
             shared_from_this(), boost::asio::placeholders::error ) );
@@ -29,11 +29,11 @@ SlackChannel::Reader::gear()
 void
 SlackChannel::Reader::fetch_head( const boost::system::error_code& error )
 {
-    if ( !error && this->m_read_chunk.dec_header() )
+    if ( !error && this->m_pivot.dec_header() )
     {
         boost::asio::async_read( this->m_socket,
-            boost::asio::buffer( this->m_read_chunk.get_data_seg_ptr(),
-                                 this->m_read_chunk.get_data_seg_len() ),
+            boost::asio::buffer( this->m_pivot.get_data_seg_ptr(),
+                                 this->m_pivot.get_data_seg_len() ),
             boost::bind( &SlackChannel::Reader::fetch_body, shared_from_this(),
                     boost::asio::placeholders::error ) );
     }
@@ -43,10 +43,10 @@ SlackChannel::Reader::fetch_head( const boost::system::error_code& error )
 void
 SlackChannel::Reader::fetch_body( const boost::system::error_code& error )
 {
-    if (!error)
+    if ( !error )
     {
-        belowlayer( this->m_read_chunk.get_data_seg_ptr(),
-                    this->m_read_chunk.get_data_seg_len() );
+        belowlayer( this->m_pivot.get_data_seg_ptr(),
+                    this->m_pivot.get_data_seg_len() );
 
         this->gear();
     }
