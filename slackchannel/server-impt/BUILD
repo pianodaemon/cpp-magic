@@ -1,7 +1,10 @@
 cc_library(
     name = "slackchannel",
-    srcs = ["frame.cpp"],
-    hdrs = ["frame.hpp"]
+    srcs = ["frame.cpp", "reader.cpp"],
+    hdrs = ["frame.hpp", "reader.hpp"],
+    deps = [
+        "@boost//:asio",
+    ],
 )
 
 cc_binary(
