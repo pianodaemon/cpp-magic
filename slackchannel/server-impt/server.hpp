@@ -2,7 +2,7 @@
 #define __SLACKCHANNEL_SERVER_HPP__
 
 #include "session.hpp"
-#include <boost/asio.hpp>
+
 
 namespace SlackChannel
 {

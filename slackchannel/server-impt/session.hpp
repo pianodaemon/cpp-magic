@@ -1,10 +1,8 @@
 #ifndef __SLACKCHANNEL_SESSION_HPP__
 #define __SLACKCHANNEL_SESSION_HPP__
 
+#include "server-impt.hpp"
 
-#include <boost/shared_ptr.hpp>
-#include <boost/enable_shared_from_this.hpp>
-#include <boost/asio.hpp>
 
 namespace SlackChannel
 {

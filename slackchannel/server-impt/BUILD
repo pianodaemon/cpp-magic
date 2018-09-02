@@ -1,6 +1,6 @@
 cc_library(
     name = "implementation",
-    hdrs = ["server.hpp","session.hpp"],
+    hdrs = ["server-impt.hpp", "server.hpp", "session.hpp"],
     srcs = ["server.cpp", "session.cpp"],
     deps = [
         "@boost//:asio",
