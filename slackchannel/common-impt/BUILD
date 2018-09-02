@@ -5,13 +5,5 @@ cc_library(
     deps = [
         "@boost//:asio",
     ],
-)
-
-cc_binary(
-    name = "server",
-    srcs = ["main.cpp"],
-    deps = [
-            "//misc:toolbox",
-            ":slackchannel"
-    ]
+    visibility = ["//server-impt:__pkg__"]
 )
