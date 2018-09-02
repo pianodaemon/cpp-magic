@@ -5,15 +5,18 @@
 #include <boost/bind.hpp>
 #include <boost/shared_ptr.hpp>
 #include <boost/enable_shared_from_this.hpp>
+#include <functional>
 #include "frame.hpp"
 
 namespace SlackChannel
 {
+    using DataReceiver = std::function<void(const char* , size_t)>;
+
     class Reader : public boost::enable_shared_from_this<Reader>
     {
         public:
 
-            Reader( boost::asio::ip::tcp::socket& socket );
+            Reader( boost::asio::ip::tcp::socket& socket, DataReceiver& receiver );
             ~Reader();
 
         private:
@@ -25,6 +28,7 @@ namespace SlackChannel
 
             Frame m_pivot;
             boost::asio::ip::tcp::socket& m_socket;
+            DataReceiver m_receiver;
     };
 
 }

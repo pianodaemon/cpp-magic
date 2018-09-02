@@ -1,6 +1,6 @@
 #include "reader.hpp"
 
-SlackChannel::Reader::Reader( boost::asio::ip::tcp::socket& socket ) : m_socket( socket )
+SlackChannel::Reader::Reader( boost::asio::ip::tcp::socket& soc, DataReceiver& rec ) : m_socket( soc ), m_receiver( rec )
 {
 
 }
@@ -45,8 +45,8 @@ SlackChannel::Reader::fetch_body( const boost::system::error_code& error )
 {
     if ( !error )
     {
-        belowlayer( this->m_pivot.get_data_seg_ptr(),
-                    this->m_pivot.get_data_seg_len() );
+        this->m_receiver( this->m_pivot.get_data_seg_ptr(),
+                          this->m_pivot.get_data_seg_len() );
 
         this->gear();
     }
