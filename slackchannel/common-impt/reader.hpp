@@ -19,9 +19,10 @@ namespace SlackChannel
             Reader( boost::asio::ip::tcp::socket& socket, DataReceiver& receiver );
             ~Reader();
 
+            void operator() (void);
+
         private:
 
-            void operator() (void);
             void gear();
             void fetch_head( const boost::system::error_code& error );
             void fetch_body( const boost::system::error_code& error );
@@ -31,6 +32,7 @@ namespace SlackChannel
             DataReceiver m_receiver;
     };
 
+    using ReaderPtr = boost::shared_ptr<Reader>;
 }
 
 
