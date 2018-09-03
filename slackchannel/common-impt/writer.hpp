@@ -17,6 +17,7 @@ namespace SlackChannel
 
         private:
 
+            void deliver( Frame&& );
             void flush( const boost::system::error_code& );
 
             std::deque<Frame> m_qwrite;
