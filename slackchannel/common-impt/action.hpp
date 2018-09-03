@@ -14,7 +14,8 @@ namespace SlackChannel
         char* payload;
     };
 
-    void putActionInto( Frame*, Action*, size_t );
+    void actionFree( Action* act_ptr );
+    void putActionInto( Frame&, Action*, size_t );
 }
 
 #endif /*  __SLACKCHANNEL_ACTION_HPP__ */
