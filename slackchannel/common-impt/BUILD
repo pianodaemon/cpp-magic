@@ -1,7 +1,7 @@
 cc_library(
     name = "slackchannel",
-    srcs = ["frame.cpp", "writer.cpp", "reader.cpp"],
-    hdrs = ["common-impt.hpp", "frame.hpp", "writer.hpp", "reader.hpp"],
+    srcs = ["frame.cpp", "action.cpp", "writer.cpp", "reader.cpp"],
+    hdrs = ["common-impt.hpp", "frame.hpp", "action.hpp", "writer.hpp", "reader.hpp"],
     deps = [
         "@boost//:thread",
         "@boost//:asio",
