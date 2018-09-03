@@ -4,6 +4,8 @@ cc_library(
     srcs = ["server.cpp", "session.cpp"],
     deps = [
         "@boost//:asio",
+        "//misc:toolbox",
+        "//common-impt:slackchannel"
     ]
 )
 
@@ -11,8 +13,6 @@ cc_binary(
     name = "server",
     srcs = ["main.cpp"],
     deps = [
-            ":implementation",
-            "//misc:toolbox",
-            "//common-impt:slackchannel"
+        ":implementation"
     ]
 )

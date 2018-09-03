@@ -10,18 +10,17 @@ namespace SlackChannel
 {
     using DataReceiver = std::function<void(const char* , size_t)>;
 
-    class Reader : public boost::enable_shared_from_this<Reader>
+    class Reader
     {
         public:
 
-            Reader( boost::asio::ip::tcp::socket& socket, DataReceiver& receiver );
+            Reader( boost::asio::ip::tcp::socket& socket, DataReceiver receiver );
             ~Reader();
 
-            void operator() (void);
+            void gear();
 
         private:
 
-            void gear();
             void fetch_head( const boost::system::error_code& error );
             void fetch_body( const boost::system::error_code& error );
 
@@ -30,7 +29,6 @@ namespace SlackChannel
             DataReceiver m_receiver;
     };
 
-    using ReaderPtr = boost::shared_ptr<Reader>;
 }
 
 
