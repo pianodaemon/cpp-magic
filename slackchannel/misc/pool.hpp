@@ -9,6 +9,14 @@
 namespace Misc
 {
 
+struct PoolException : public std::exception
+{
+    const char * what () const throw ()
+    {
+        return "No more slots available";
+    }
+};
+
 template< typename T >
 class Pool
 {

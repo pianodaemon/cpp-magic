@@ -79,19 +79,34 @@ Misc::Pool<T>::place_smart( T* t )
             return i;
         }
 
-        // If you've reached this code block my brother, so...
-        //   you might be in trouble soon. By the way you seem
-        //   a lucky folk and perhaps you would find a free
-        //   shelf by performing sequential search with awful
-        //   linear time. Otherwise the matter is fucked :(
+        // If you've reached this point my brother, so...
+        // you might be in trouble soon. By the way you seem
+        // a lucky folk and perhaps you would find a free
+        // shelf by performing sequential search with awful
+        // linear time. Otherwise the matter is fucked :(
 
-        /* still needed implementation*/
+        int j = 0;
+        static int max_nodes = this->m_slots.length();
 
+        do
+        {
+            i += this->m_registers[ Regs::INCREMENT_REG ];
+            j++;
+        } while( ( this->m_slots[ i ] != NULL ) && ( j < max_nodes ) );
+
+        if ( j == ( max_nodes - 1 ) )
+        {
+            throw PoolException();
+        }
+
+        uint8_t next_one = i + this->m_registers[ Regs::INCREMENT_REG ];
+        this->m_registers[ Regs::NEXT_REG ] = next_one;
+
+        return i;
     };
 
-    this->m_mutex.lock();
+    boost::mutex::scoped_lock scoped_lock(this->m_mutex);
     int idx = req_next();
     this->m_slots[idx] = t;
-    this->m_mutex.unlock();
     return idx;
 }
