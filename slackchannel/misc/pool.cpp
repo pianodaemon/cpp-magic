@@ -17,7 +17,7 @@ template< typename T >
 void
 Misc::Pool<T>::place_at( const int idx, T* t )
 {
-    pthread_mutex_lock( &this->m_mutex );
+    this->m_mutex.lock();
 
     if ( t == nullptr )
     {
@@ -26,7 +26,7 @@ Misc::Pool<T>::place_at( const int idx, T* t )
 
     this->m_slots[idx] = t;
 
-    pthread_mutex_unlock( &this->m_mutex );
+    this->m_mutex.unlock();
 }
 
 template< typename T >
@@ -40,9 +40,9 @@ template< typename T >
 T*
 Misc::Pool<T>::fetch_from( const int idx )
 {
-    pthread_mutex_lock( &this->m_mutex );
-    auto t = this->m_slots[idx];
-    pthread_mutex_unlock( &this->m_mutex );
+    this->m_mutex.lock();
+    T* t = this->m_slots[idx];
+    this->m_mutex.unlock();
     return t;
 }
 
@@ -56,9 +56,9 @@ Misc::Pool<T>::place_smart( T* t )
         return 0;
     };
 
-    pthread_mutex_lock( &this->m_mutex );
-    auto idx = req_next();
+    this->m_mutex.lock();
+    int idx = req_next();
     this->m_slots[idx] = t;
-    pthread_mutex_unlock( &this->m_mutex );
+    this->m_mutex.unlock();
     return idx;
 }

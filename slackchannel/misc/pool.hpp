@@ -4,6 +4,7 @@
 #include <inttypes.h>
 #include <vector>
 #include <cstdlib>
+#include <boost/thread/mutex.hpp>
 
 namespace Misc
 {
@@ -32,7 +33,7 @@ class Pool
         };
 
         std::vector< T* > m_slots;
-        pthread_mutex_t m_mutex;
+        boost::mutex m_mutex;
         uint8_t m_registers[ Regs::MAX_REG ];
 };
 
