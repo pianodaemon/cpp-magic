@@ -18,7 +18,14 @@ void
 Misc::Pool<T>::place_at( const int idx, T* t )
 {
     pthread_mutex_lock( &this->m_mutex );
+
+    if ( t == nullptr )
+    {
+        delete this->m_slots[idx];
+    }
+
     this->m_slots[idx] = t;
+
     pthread_mutex_unlock( &this->m_mutex );
 }
 
