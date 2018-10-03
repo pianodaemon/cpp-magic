@@ -4,20 +4,20 @@
 template< typename T >
 Misc::Pool<T>::Pool( const int size ) : m_slots( size, nullptr )
 {
-    pthread_mutex_init( &this->m_mutex , NULL );
+
 }
 
 template< typename T >
 Misc::Pool<T>::~Pool()
 {
-    pthread_mutex_destroy( &this->m_mutex );
+
 }
 
 template< typename T >
 void
 Misc::Pool<T>::place_at( const int idx, T* t )
 {
-    this->m_mutex.lock();
+    boost::mutex::scoped_lock scoped_lock(this->m_mutex);
 
     if ( t == nullptr )
     {
@@ -25,8 +25,6 @@ Misc::Pool<T>::place_at( const int idx, T* t )
     }
 
     this->m_slots[idx] = t;
-
-    this->m_mutex.unlock();
 }
 
 template< typename T >
